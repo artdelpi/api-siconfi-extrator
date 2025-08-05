@@ -8,21 +8,22 @@ ui <- fluidPage(
     ),
 
     tags$link(
-        href = "styles.css",
-        rel = "stylesheet",
-        type = "text/css"
+      href = "styles.css",
+      rel = "stylesheet",
+      type = "text/css"
     ),
+
     includeCSS("www/styles.css")
   ),
 
   # Sidebar
   div(class = "sidebar",
-      h4("SICONFI"),
-      hr(),
-      a("Dashboard", href = "#"),
-      a("Extrações", href = "#"),
-      a("Relatórios", href = "#"),
-      a("Sobre", href = "#")
+    h4("SICONFI"),
+    hr(),
+    a("Dashboard", href = "#"),
+    a("Extrações", href = "#"),
+    a("Relatórios", href = "#"),
+    a("Sobre", href = "#")
   ),
 
   # Topbar
@@ -39,33 +40,10 @@ ui <- fluidPage(
                                choices = c("rreo", "rgf", "dca", "entes",
                                            "extrato_entregas", "msc_controle",
                                            "msc_orcamentaria", "msc_patrimonial")),
-
-                   sliderInput("ano_range", "Período (Ano):",
-                               min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
-                               value = c(2023, 2024), sep = "", ticks = FALSE),
-
-                   checkboxGroupInput("bimestres", "Bimestres:",
-                                      choices = 1:6,
-                                      selected = c(1, 2, 3))
+                   uiOutput("params_coluna_1")
             ),
             column(6,
-                   selectInput("co_tipo_demonstrativo", "Tipo de Demonstrativo:",
-                               choices = c("RREO", "RREO Simplificado")),
-
-                   selectizeInput("id_ente", "UFs (múltiplas):",
-                                  choices = c(
-                                    "12 - Acre", "27 - Alagoas", "13 - Amazonas", "16 - Amapá", "29 - Bahia", 
-                                    "23 - Ceará", "53 - Distrito Federal", "32 - Espírito Santo", "52 - Goiás", 
-                                    "21 - Maranhão", "31 - Minas Gerais", "50 - Mato Grosso do Sul", "51 - Mato Grosso", 
-                                    "15 - Pará", "25 - Paraíba", "26 - Pernambuco", "22 - Piauí", "41 - Paraná", 
-                                    "33 - Rio de Janeiro", "24 - Rio Grande do Norte", "11 - Rondônia", "14 - Roraima", 
-                                    "43 - Rio Grande do Sul", "42 - Santa Catarina", "28 - Sergipe", 
-                                    "35 - São Paulo", "17 - Tocantins"
-                                  ),
-                                  multiple = TRUE,
-                                  selected = c("33 - Rio de Janeiro", "35 - São Paulo")),
-
-                   textInput("no_anexo", "Anexo (opcional):", "")
+                   uiOutput("params_coluna_2")
             )
           ),
           actionButton("buscar", "Buscar", class = "btn btn-primary mt-3")
@@ -85,6 +63,27 @@ server <- function(input, output, session) {
   source("R/extrator.R")
 
   dados_extraidos <- reactiveVal(NULL)
+
+  cod_ibge = c(
+    "12 - Acre", "27 - Alagoas", "13 - Amazonas", "16 - Amapá", "29 - Bahia", 
+    "23 - Ceará", "53 - Distrito Federal", "32 - Espírito Santo", "52 - Goiás", 
+    "21 - Maranhão", "31 - Minas Gerais", "50 - Mato Grosso do Sul", "51 - Mato Grosso", 
+    "15 - Pará", "25 - Paraíba", "26 - Pernambuco", "22 - Piauí", "41 - Paraná", 
+    "33 - Rio de Janeiro", "24 - Rio Grande do Norte", "11 - Rondônia", "14 - Roraima", 
+    "43 - Rio Grande do Sul", "42 - Santa Catarina", "28 - Sergipe", 
+    "35 - São Paulo", "17 - Tocantins"
+  )
+
+  # Renderiza períodos do RGF de acordo com a periodicidade (Q ou S)
+  output$nr_periodo_ui <- renderUI({
+    req(input$in_periodicidade) # garante que existe input
+
+    choices <- if (input$in_periodicidade == "Q") 1:3 else 1:2
+
+    checkboxGroupInput("nr_periodo", "Período:",
+                       choices = choices,
+                       selected = choices)
+  })
 
   observeEvent(input$buscar, {
     # Extração dos dados da API 
@@ -160,6 +159,160 @@ server <- function(input, output, session) {
     # Armazena para visualização
     dados_extraidos(df)
   })
+
+  output$params_coluna_1 <- renderUI ({
+    switch(input$endpoint, 
+      "anexos-relatorios" =  NULL, # sem query params
+
+      "dca" = list(
+        sliderInput("an_exercicio", "Período (Ano):",
+                    min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
+                    value = c(2023, 2024), sep = "", ticks = FALSE)
+      ),
+
+      "entes" = NULL, # sem query params
+
+      "extrato_entregas" = list(
+        sliderInput("an_referencia", "Período (Ano):",
+                    min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
+                    value = c(2023, 2024), sep = "", ticks = FALSE)
+      ),
+
+      "msc_controle" = list(
+        sliderInput("an_referencia", "Período (Ano):",
+                    min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
+                    value = c(2023, 2024), sep = "", ticks = FALSE),
+        checkboxGroupInput("me_referencia", "Mês:",
+                           choices = 1:12,
+                           selected = c(1, 2, 3))
+      ),
+
+      "msc_orcamentaria" = list(
+        sliderInput("an_referencia", "Período (Ano):",
+                    min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
+                    value = c(2023, 2024), sep = "", ticks = FALSE),
+        checkboxGroupInput("me_referencia", "Mês:",
+                            choices = 1:12,
+                            selected = c(1, 2, 3))
+      ),
+
+      "msc_patrimonial" = list(
+        sliderInput("an_referencia", "Período (Ano):",
+                    min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
+                    value = c(2023, 2024), sep = "", ticks = FALSE),
+        checkboxGroupInput("me_referencia", "Mês:",
+                    choices = 1:12,
+                    selected = c(1, 2, 3))
+              ),
+
+      "rgf" = list(
+        sliderInput("an_exercicio", "Período (Ano):",
+                    min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
+                    value = c(2023, 2024), sep = "", ticks = FALSE),
+        selectInput("in_periodicidade", "Periodicidade:", 
+                    choices = c("S", "Q")),
+        uiOutput("nr_periodo_ui") # período depende da periodicidade
+        ),
+
+      "rreo" = list(
+        sliderInput("an_exercicio", "Período (Ano):",
+                    min = 2015, max = as.numeric(format(Sys.Date(), "%Y")),
+                    value = c(2023, 2024), sep = "", ticks = FALSE),
+        checkboxGroupInput("nr_periodo", "Bimestres:",
+                           choices = 1:6,
+                           selected = c(1, 2, 3))
+      ),
+
+      stop("Este endpoint é inválido ou não foi implementado.")
+    )
+  })
+
+output$params_coluna_2 <- renderUI({
+  switch(input$endpoint, 
+         
+    "anexos-relatorios" = NULL,  # sem query params
+
+    "dca" = list(
+      textInput("no_anexo", "Anexo (opcional):", ""),
+      selectizeInput("id_ente", "UFs (múltiplas):", 
+                     choices = cod_ibge, 
+                     multiple = TRUE)
+    ),
+
+    "entes" = NULL,  # sem query params
+
+    "extrato_entregas" = list(
+      selectizeInput("id_ente", "UFs (múltiplas):", 
+                    choices = cod_ibge, 
+                    multiple = TRUE)
+    ),
+
+    "msc_controle" = list(
+      selectizeInput("id_ente", "UFs (múltiplas):", 
+                     choices = cod_ibge, multiple = TRUE),
+      selectInput("co_tipo_matriz", "Tipo de Matriz:",
+                  choices = c("MSCC", "MSCE")),
+      selectInput("classe_conta", "Classe de Conta:",
+                  choices = c("7", "8")),
+      selectInput("id_tv", "Tipo de Valor:",
+                  choices = c("beginning_balance", 
+                              "ending_balance", 
+                              "period_change"))
+    ),
+
+    "msc_orcamentaria" = list(
+      selectizeInput("id_ente", "UFs (múltiplas):", 
+                     choices = cod_ibge, multiple = TRUE),
+      selectInput("co_tipo_matriz", "Tipo de Matriz:", 
+                  choices = c("MSCC", "MSCE")),
+      selectInput("classe_conta", "Classe de Conta:", 
+                  choices = c("1", "2")),
+      selectInput("id_tv", "Tipo de Valor:", 
+                  choices = c("beginning_balance", 
+                              "ending_balance", 
+                              "period_change"))
+    ),
+
+    "msc_patrimonial" = list(
+      selectizeInput("id_ente", "UFs (múltiplas):", 
+                     choices = cod_ibge, multiple = TRUE),
+      selectInput("co_tipo_matriz", "Tipo de Matriz:", 
+                  choices = c("MSCC", "MSCE")),
+      selectInput("classe_conta", "Classe de Conta:", 
+                  choices = c("1", "2")),
+      selectInput("id_tv", "Tipo de Valor:", 
+                  choices = c("beginning_balance", 
+                              "ending_balance", 
+                              "period_change"))
+    ),
+
+    "rgf" = list(
+      selectInput("co_tipo_demonstrativo", "Tipo de Demonstrativo:", 
+                  choices = c("RGF", "RGF Simplificado")),
+      textInput("no_anexo", "Anexo (opcional):", ""),
+      selectInput("co_esfera", "Esfera:", 
+                  choices = c("E", "M")),
+      selectInput("co_poder", "Poder:", 
+                  choices = c("1 - Executivo", 
+                              "2 - Legislativo", 
+                              "3 - Judiciário")),
+      selectizeInput("id_ente", "UFs (múltiplas):", 
+                     choices = cod_ibge, 
+                     multiple = TRUE)
+    ),
+
+    "rreo" = list(
+      selectInput("co_tipo_demonstrativo", "Tipo de Demonstrativo:", 
+                  choices = c("RREO", "RREO Simplificado")),
+      textInput("no_anexo", "Anexo (opcional):", ""),
+      selectInput("co_esfera", "Esfera:", 
+                  choices = c("M", "E", "U", "C")),
+      selectizeInput("id_ente", "UFs (múltiplas):", 
+                     choices = cod_ibge, 
+                     multiple = TRUE)
+    )
+  )
+})
 
   # Exibir prévia
   output$preview <- renderTable({
