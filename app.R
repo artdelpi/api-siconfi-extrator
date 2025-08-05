@@ -150,7 +150,7 @@ server <- function(input, output, session) {
 
     # Salva localmente
     if (!is.null(df)) {
-      write.csv(df, caminho_csv, row.names = FALSE)
+      write.csv(df, input$caminho_csv, row.names = FALSE)
       showNotification("Extração finalizada com sucesso!", type = "message")
     } else {
       showNotification("Nenhum dado encontrado com esses filtros.", type = "warning")
@@ -160,7 +160,7 @@ server <- function(input, output, session) {
     dados_extraidos(df)
 
     }, error = function(e) {
-        showNotification(paste("Erro na extração: " e$message), type="error")
+      showNotification(paste("Erro na extração:", e$message), type = "error")
     }))
 
   output$params_coluna_1 <- renderUI ({
@@ -301,7 +301,8 @@ server <- function(input, output, session) {
                                 "3 - Judiciário")),
         selectizeInput("id_ente", "UFs (múltiplas):", 
                       choices = cod_ibge, 
-                      multiple = TRUE)
+                      multiple = TRUE),
+        textInput("caminho_csv", "Diretório de salvamento:", "")
       ),
 
       "rreo" = list(
@@ -312,7 +313,8 @@ server <- function(input, output, session) {
                     choices = c("M", "E", "U", "C")),
         selectizeInput("id_ente", "UFs (múltiplas):", 
                       choices = cod_ibge, 
-                      multiple = TRUE)
+                      multiple = TRUE),
+        textInput("caminho_csv", "Diretório de salvamento:", "")
       )
     )
   })
@@ -333,3 +335,5 @@ server <- function(input, output, session) {
     }
   )
 }
+
+shinyApp(ui, server)

@@ -3,7 +3,7 @@ library(jsonlite)
 library(dplyr)
 
 #-------------------------------------------------------------
-#        Funções principal de extração da API Siconfi               
+#        Funções principais de extração da API Siconfi                      
 #-------------------------------------------------------------
 
 extrair_dados_siconfi_anexos_relatorios <- function(){
