@@ -161,8 +161,8 @@ server <- function(input, output, session) {
 
     }, error = function(e) {
       showNotification(paste("Erro na extração:", e$message), type = "error")
-    }))
-
+    }))  
+  
   output$params_coluna_1 <- renderUI ({
     switch(input$endpoint, 
       "anexos-relatorios" =  NULL, # sem query params
@@ -233,21 +233,27 @@ server <- function(input, output, session) {
   output$params_coluna_2 <- renderUI({
     switch(input$endpoint, 
           
-      "anexos-relatorios" = NULL,  # sem query params
+      "anexos-relatorios" = list(
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+      ),  # sem query params
 
       "dca" = list(
         textInput("no_anexo", "Anexo (opcional):", ""),
         selectizeInput("id_ente", "UFs (múltiplas):", 
                       choices = cod_ibge, 
-                      multiple = TRUE)
+                      multiple = TRUE),
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       ),
 
-      "entes" = NULL,  # sem query params
+      "entes" = list(
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+      ),  # sem query params
 
       "extrato_entregas" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
                       choices = cod_ibge, 
-                      multiple = TRUE)
+                      multiple = TRUE),
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       ),
 
       "msc_controle" = list(
@@ -260,7 +266,8 @@ server <- function(input, output, session) {
         selectInput("id_tv", "Tipo de Valor:",
                     choices = c("beginning_balance", 
                                 "ending_balance", 
-                                "period_change"))
+                                "period_change")),
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       ),
 
       "msc_orcamentaria" = list(
@@ -273,7 +280,8 @@ server <- function(input, output, session) {
         selectInput("id_tv", "Tipo de Valor:", 
                     choices = c("beginning_balance", 
                                 "ending_balance", 
-                                "period_change"))
+                                "period_change")),
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       ),
 
       "msc_patrimonial" = list(
@@ -286,7 +294,8 @@ server <- function(input, output, session) {
         selectInput("id_tv", "Tipo de Valor:", 
                     choices = c("beginning_balance", 
                                 "ending_balance", 
-                                "period_change"))
+                                "period_change")),
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")                  
       ),
 
       "rgf" = list(
@@ -302,7 +311,7 @@ server <- function(input, output, session) {
         selectizeInput("id_ente", "UFs (múltiplas):", 
                       choices = cod_ibge, 
                       multiple = TRUE),
-        textInput("caminho_csv", "Diretório de salvamento:", "")
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       ),
 
       "rreo" = list(
@@ -314,7 +323,7 @@ server <- function(input, output, session) {
         selectizeInput("id_ente", "UFs (múltiplas):", 
                       choices = cod_ibge, 
                       multiple = TRUE),
-        textInput("caminho_csv", "Diretório de salvamento:", "")
+        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       )
     )
   })
