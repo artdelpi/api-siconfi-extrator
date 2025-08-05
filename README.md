@@ -9,6 +9,14 @@ Permite selecionar o endpoint, ano e UF por meio de menus intuitivos e obter os 
 - Visualização de dados diretamente na interface
 - Exportação para CSV
 
+## Versão Inicial do Dashboard
+
+<p align="center">
+  <img src="docs/api-siconfi-exctract-menu.png" alt="Tela de Consulta Individual de Pokémon" width="600px">
+  <br>
+  <em>Figura 1 - Protótipo do dashboard de extração.</em>
+</p>
+
 ## Tecnologias Utilizadas
 
 - [R](https://www.r-project.org/)
