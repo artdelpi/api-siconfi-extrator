@@ -85,9 +85,9 @@ server <- function(input, output, session) {
                        selected = choices)
   })
 
-  observeEvent(input$buscar, {
+  observeEvent(input$buscar, tryCatch ({
     # Extração dos dados da API 
-    df <- switch(endpoint,
+    df <- switch(input$endpoint,
       "anexos-relatorios" = extrair_dados_siconfi_anexos_relatorios(
                 # sem query params
               ),
@@ -158,7 +158,10 @@ server <- function(input, output, session) {
 
     # Armazena para visualização
     dados_extraidos(df)
-  })
+
+    }, error = function(e) {
+        showNotification(paste("Erro na extração: " e$message), type="error")
+    }))
 
   output$params_coluna_1 <- renderUI ({
     switch(input$endpoint, 

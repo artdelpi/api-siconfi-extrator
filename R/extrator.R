@@ -2,9 +2,9 @@ library(httr)
 library(jsonlite)
 library(dplyr)
 
-#------------------------------------------------------------
-#        Função principal de extração da API Siconfi               
-#------------------------------------------------------------
+#-------------------------------------------------------------
+#        Funções principal de extração da API Siconfi               
+#-------------------------------------------------------------
 
 extrair_dados_siconfi_anexos_relatorios <- function(){
     url_base <- "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/anexos-relatorios"
