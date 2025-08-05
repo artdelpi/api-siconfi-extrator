@@ -227,92 +227,92 @@ server <- function(input, output, session) {
     )
   })
 
-output$params_coluna_2 <- renderUI({
-  switch(input$endpoint, 
-         
-    "anexos-relatorios" = NULL,  # sem query params
+  output$params_coluna_2 <- renderUI({
+    switch(input$endpoint, 
+          
+      "anexos-relatorios" = NULL,  # sem query params
 
-    "dca" = list(
-      textInput("no_anexo", "Anexo (opcional):", ""),
-      selectizeInput("id_ente", "UFs (múltiplas):", 
-                     choices = cod_ibge, 
-                     multiple = TRUE)
-    ),
+      "dca" = list(
+        textInput("no_anexo", "Anexo (opcional):", ""),
+        selectizeInput("id_ente", "UFs (múltiplas):", 
+                      choices = cod_ibge, 
+                      multiple = TRUE)
+      ),
 
-    "entes" = NULL,  # sem query params
+      "entes" = NULL,  # sem query params
 
-    "extrato_entregas" = list(
-      selectizeInput("id_ente", "UFs (múltiplas):", 
-                    choices = cod_ibge, 
-                    multiple = TRUE)
-    ),
+      "extrato_entregas" = list(
+        selectizeInput("id_ente", "UFs (múltiplas):", 
+                      choices = cod_ibge, 
+                      multiple = TRUE)
+      ),
 
-    "msc_controle" = list(
-      selectizeInput("id_ente", "UFs (múltiplas):", 
-                     choices = cod_ibge, multiple = TRUE),
-      selectInput("co_tipo_matriz", "Tipo de Matriz:",
-                  choices = c("MSCC", "MSCE")),
-      selectInput("classe_conta", "Classe de Conta:",
-                  choices = c("7", "8")),
-      selectInput("id_tv", "Tipo de Valor:",
-                  choices = c("beginning_balance", 
-                              "ending_balance", 
-                              "period_change"))
-    ),
+      "msc_controle" = list(
+        selectizeInput("id_ente", "UFs (múltiplas):", 
+                      choices = cod_ibge, multiple = TRUE),
+        selectInput("co_tipo_matriz", "Tipo de Matriz:",
+                    choices = c("MSCC", "MSCE")),
+        selectInput("classe_conta", "Classe de Conta:",
+                    choices = c("7", "8")),
+        selectInput("id_tv", "Tipo de Valor:",
+                    choices = c("beginning_balance", 
+                                "ending_balance", 
+                                "period_change"))
+      ),
 
-    "msc_orcamentaria" = list(
-      selectizeInput("id_ente", "UFs (múltiplas):", 
-                     choices = cod_ibge, multiple = TRUE),
-      selectInput("co_tipo_matriz", "Tipo de Matriz:", 
-                  choices = c("MSCC", "MSCE")),
-      selectInput("classe_conta", "Classe de Conta:", 
-                  choices = c("1", "2")),
-      selectInput("id_tv", "Tipo de Valor:", 
-                  choices = c("beginning_balance", 
-                              "ending_balance", 
-                              "period_change"))
-    ),
+      "msc_orcamentaria" = list(
+        selectizeInput("id_ente", "UFs (múltiplas):", 
+                      choices = cod_ibge, multiple = TRUE),
+        selectInput("co_tipo_matriz", "Tipo de Matriz:", 
+                    choices = c("MSCC", "MSCE")),
+        selectInput("classe_conta", "Classe de Conta:", 
+                    choices = c("1", "2")),
+        selectInput("id_tv", "Tipo de Valor:", 
+                    choices = c("beginning_balance", 
+                                "ending_balance", 
+                                "period_change"))
+      ),
 
-    "msc_patrimonial" = list(
-      selectizeInput("id_ente", "UFs (múltiplas):", 
-                     choices = cod_ibge, multiple = TRUE),
-      selectInput("co_tipo_matriz", "Tipo de Matriz:", 
-                  choices = c("MSCC", "MSCE")),
-      selectInput("classe_conta", "Classe de Conta:", 
-                  choices = c("1", "2")),
-      selectInput("id_tv", "Tipo de Valor:", 
-                  choices = c("beginning_balance", 
-                              "ending_balance", 
-                              "period_change"))
-    ),
+      "msc_patrimonial" = list(
+        selectizeInput("id_ente", "UFs (múltiplas):", 
+                      choices = cod_ibge, multiple = TRUE),
+        selectInput("co_tipo_matriz", "Tipo de Matriz:", 
+                    choices = c("MSCC", "MSCE")),
+        selectInput("classe_conta", "Classe de Conta:", 
+                    choices = c("1", "2")),
+        selectInput("id_tv", "Tipo de Valor:", 
+                    choices = c("beginning_balance", 
+                                "ending_balance", 
+                                "period_change"))
+      ),
 
-    "rgf" = list(
-      selectInput("co_tipo_demonstrativo", "Tipo de Demonstrativo:", 
-                  choices = c("RGF", "RGF Simplificado")),
-      textInput("no_anexo", "Anexo (opcional):", ""),
-      selectInput("co_esfera", "Esfera:", 
-                  choices = c("E", "M")),
-      selectInput("co_poder", "Poder:", 
-                  choices = c("1 - Executivo", 
-                              "2 - Legislativo", 
-                              "3 - Judiciário")),
-      selectizeInput("id_ente", "UFs (múltiplas):", 
-                     choices = cod_ibge, 
-                     multiple = TRUE)
-    ),
+      "rgf" = list(
+        selectInput("co_tipo_demonstrativo", "Tipo de Demonstrativo:", 
+                    choices = c("RGF", "RGF Simplificado")),
+        textInput("no_anexo", "Anexo (opcional):", ""),
+        selectInput("co_esfera", "Esfera:", 
+                    choices = c("E", "M")),
+        selectInput("co_poder", "Poder:", 
+                    choices = c("1 - Executivo", 
+                                "2 - Legislativo", 
+                                "3 - Judiciário")),
+        selectizeInput("id_ente", "UFs (múltiplas):", 
+                      choices = cod_ibge, 
+                      multiple = TRUE)
+      ),
 
-    "rreo" = list(
-      selectInput("co_tipo_demonstrativo", "Tipo de Demonstrativo:", 
-                  choices = c("RREO", "RREO Simplificado")),
-      textInput("no_anexo", "Anexo (opcional):", ""),
-      selectInput("co_esfera", "Esfera:", 
-                  choices = c("M", "E", "U", "C")),
-      selectizeInput("id_ente", "UFs (múltiplas):", 
-                     choices = cod_ibge, 
-                     multiple = TRUE)
+      "rreo" = list(
+        selectInput("co_tipo_demonstrativo", "Tipo de Demonstrativo:", 
+                    choices = c("RREO", "RREO Simplificado")),
+        textInput("no_anexo", "Anexo (opcional):", ""),
+        selectInput("co_esfera", "Esfera:", 
+                    choices = c("M", "E", "U", "C")),
+        selectizeInput("id_ente", "UFs (múltiplas):", 
+                      choices = cod_ibge, 
+                      multiple = TRUE)
+      )
     )
-  )
-})
+  })
 
   # Exibir prévia
   output$preview <- renderTable({
