@@ -74,6 +74,14 @@ server <- function(input, output, session) {
     "35 - São Paulo", "17 - Tocantins"
   )
 
+  # REGEX pra extração de substrings
+  uf_codes  <- sub("^\\s*([0-9]{1,2}).*$", "\\1", cod_ibge)               
+  uf_names  <- sub("^\\s*[0-9]{1,2}\\s*-\\s*", "", cod_ibge)              
+  uf_labels <- paste0(uf_names, " (", uf_codes, ")")                      
+
+  # Valor puro
+  uf_choices <- setNames(uf_codes, uf_labels)
+
   # Renderiza períodos do RGF de acordo com a periodicidade (Q ou S)
   output$nr_periodo_ui <- renderUI({
     req(input$in_periodicidade) # garante que existe input
@@ -86,83 +94,93 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$buscar, tryCatch ({
-    # Extração dos dados da API 
-    df <- switch(input$endpoint,
-      "anexos-relatorios" = extrair_dados_siconfi_anexos_relatorios(
-                # sem query params
-              ),
-      "dca" = extrair_dados_siconfi_dca(
-                an_exercicio = seq(input$ano_range[1], input$ano_range[2]),
-                no_anexo = input$no_anexo,
-                id_ente = input$id_ente
-              ),
-      "entes" = extrair_dados_siconfi_entes(
-                # sem query params
-              ),
-      "extrato_entregas" = extrair_dados_siconfi_extrato_entregas(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2])
-              ),
-      "msc_controle" = extrair_dados_siconfi_msc_controle(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2]),
-                me_referencia = input$me_referencia,
-                co_tipo_matriz = input$co_tipo_matriz,
-                classe_conta = input$classe_conta,
-                id_tv = input$id_tv
-              ),
-      "msc_orcamentaria" = extrair_dados_siconfi_msc_orcamentaria(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2]),
-                me_referencia = input$me_referencia,
-                co_tipo_matriz = input$co_tipo_matriz,
-                classe_conta = input$classe_conta,
-                id_tv = input$id_tv
-              ),
-      "msc_patrimonial" = extrair_dados_siconfi_msc_patrimonial(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2]),
-                me_referencia = input$me_referencia,
-                co_tipo_matriz = input$co_tipo_matriz,
-                classe_conta = input$classe_conta,
-                id_tv = input$id_tv
-              ),
-      "rgf" = extrair_dados_siconfi_rgf(
-                an_exercicio = seq(input$ano_range[1], input$ano_range[2]),
-                in_periodicidade = input$in_periodicidade,
-                nr_periodo = input$nr_periodo,
-                co_tipo_demonstrativo = input$co_tipo_demonstrativo,
-                no_anexo = input$no_anexo,
-                co_esfera = input$co_esfera,
-                co_poder = input$co_poder,
-                id_ente = input$id_ente
-              ),
-      "rreo" = extrair_dados_siconfi_rreo(
-                an_exercicio = seq(input$ano_range[1], input$ano_range[2]),
-                nr_periodo = input$nr_periodo,
-                co_tipo_demonstrativo = input$co_tipo_demonstrativo,
-                no_anexo = input$no_anexo,
-                co_esfera = input$co_esfera,
-                id_ente = input$id_ente
-              ),
-      stop("Este endpoint é inválido ou não foi implementado.")
-    )
+    withProgress(message = "Importando dados...", value = 0, {
 
-    # Salva localmente
-    if (!is.null(df)) {
-      write.csv(df, caminho_csv, row.names = FALSE)
-      showNotification("Extração finalizada com sucesso!", type = "message")
-    } else {
+      incProgress(0.1, detail = "Conectando à API...")
+
+      # Extração dos dados da API 
+      df <- switch(input$endpoint,
+        "anexos-relatorios" = extrair_dados_siconfi_anexos_relatorios(),
+        "dca" = extrair_dados_siconfi_dca(
+          an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+          no_anexo = input$no_anexo,
+          id_ente = input$id_ente
+        ),
+        "entes" = extrair_dados_siconfi_entes(),
+        "extrato_entregas" = extrair_dados_siconfi_extrato_entregas(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2])
+        ),
+        "msc_controle" = extrair_dados_siconfi_msc_controle(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+          me_referencia = input$me_referencia,
+          co_tipo_matriz = input$co_tipo_matriz,
+          classe_conta = input$classe_conta,
+          id_tv = input$id_tv
+        ),
+        "msc_orcamentaria" = extrair_dados_siconfi_msc_orcamentaria(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+          me_referencia = input$me_referencia,
+          co_tipo_matriz = input$co_tipo_matriz,
+          classe_conta = input$classe_conta,
+          id_tv = input$id_tv
+        ),
+        "msc_patrimonial" = extrair_dados_siconfi_msc_patrimonial(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+          me_referencia = input$me_referencia,
+          co_tipo_matriz = input$co_tipo_matriz,
+          classe_conta = input$classe_conta,
+          id_tv = input$id_tv
+        ),
+        "rgf" = extrair_dados_siconfi_rgf(
+          an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+          in_periodicidade = input$in_periodicidade,
+          nr_periodo = input$nr_periodo,
+          co_tipo_demonstrativo = input$co_tipo_demonstrativo,
+          no_anexo = input$no_anexo,
+          co_esfera = input$co_esfera,
+          co_poder = input$co_poder,
+          id_ente = input$id_ente
+        ),
+        "rreo" = extrair_dados_siconfi_rreo(
+          an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+          nr_periodo = input$nr_periodo,
+          co_tipo_demonstrativo = input$co_tipo_demonstrativo,
+          no_anexo = input$no_anexo,
+          co_esfera = input$co_esfera,
+          id_ente = input$id_ente
+        ),
+        stop("Este endpoint é inválido ou não foi implementado.")
+      )
+    
+    
+    incProgress(0.8, detail = "Processando dados...")
+
+    # Simulação de tempo de processamento (opcional)
+    Sys.sleep(0.5)
+
+    # Se vazio, avisa e sai
+    if (is.null(df) || nrow(df) == 0) {
+      dados_extraidos(NULL)
       showNotification("Nenhum dado encontrado com esses filtros.", type = "warning")
+      return(invisible(NULL))
     }
 
-    # Armazena para visualização
+    # Guarda pro preview
     dados_extraidos(df)
 
-    }, error = function(e) {
-        showNotification(paste("Erro na extração: " e$message), type="error")
-    }))
+    incProgress(1, detail = "Concluído!")
+    })
 
+    showNotification(sprintf("Extração concluída: linhas retornadas: %d", nrow(dados_extraidos())), type = "message")
+
+  }, error = function(e) {
+    showNotification(paste("Erro na extração:", e$message), type = "error")
+  }))  
+  
   output$params_coluna_1 <- renderUI ({
     switch(input$endpoint, 
       "anexos-relatorios" =  NULL, # sem query params
@@ -232,27 +250,28 @@ server <- function(input, output, session) {
 
   output$params_coluna_2 <- renderUI({
     switch(input$endpoint, 
-          
-      "anexos-relatorios" = NULL,  # sem query params
+      "anexos-relatorios" = list(
+      ),  # sem query params
 
       "dca" = list(
         textInput("no_anexo", "Anexo (opcional):", ""),
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
+                      choices = uf_choices, 
                       multiple = TRUE)
       ),
 
-      "entes" = NULL,  # sem query params
+      "entes" = list(
+      ),  # sem query params
 
       "extrato_entregas" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
+                      choices = uf_choices, 
                       multiple = TRUE)
       ),
 
       "msc_controle" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, multiple = TRUE),
+                      choices = uf_choices, multiple = TRUE),
         selectInput("co_tipo_matriz", "Tipo de Matriz:",
                     choices = c("MSCC", "MSCE")),
         selectInput("classe_conta", "Classe de Conta:",
@@ -265,7 +284,7 @@ server <- function(input, output, session) {
 
       "msc_orcamentaria" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, multiple = TRUE),
+                      choices = uf_choices, multiple = TRUE),
         selectInput("co_tipo_matriz", "Tipo de Matriz:", 
                     choices = c("MSCC", "MSCE")),
         selectInput("classe_conta", "Classe de Conta:", 
@@ -278,7 +297,7 @@ server <- function(input, output, session) {
 
       "msc_patrimonial" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, multiple = TRUE),
+                      choices = uf_choices, multiple = TRUE),
         selectInput("co_tipo_matriz", "Tipo de Matriz:", 
                     choices = c("MSCC", "MSCE")),
         selectInput("classe_conta", "Classe de Conta:", 
@@ -300,7 +319,7 @@ server <- function(input, output, session) {
                                 "2 - Legislativo", 
                                 "3 - Judiciário")),
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
+                      choices = uf_choices, 
                       multiple = TRUE)
       ),
 
@@ -311,7 +330,7 @@ server <- function(input, output, session) {
         selectInput("co_esfera", "Esfera:", 
                     choices = c("M", "E", "U", "C")),
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
+                      choices = uf_choices, 
                       multiple = TRUE)
       )
     )
@@ -319,17 +338,20 @@ server <- function(input, output, session) {
 
   # Exibir prévia
   output$preview <- renderTable({
+    req(dados_extraidos())
     head(dados_extraidos(), 20)
   })
 
   # Download
   output$baixar <- downloadHandler(
     filename = function() {
-      paste0("dados_siconfi_", Sys.Date(), ".csv")
+      paste0("dados_siconfi_", input$endpoint, "_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      df <- dados_extraidos()
-      if (!is.null(df)) write.csv(df, file, row.names = FALSE)
+      df <- req(dados_extraidos())
+      write.csv(df, file, row.names = FALSE)
     }
   )
 }
+
+shinyApp(ui, server)

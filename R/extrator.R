@@ -3,7 +3,7 @@ library(jsonlite)
 library(dplyr)
 
 #-------------------------------------------------------------
-#        Funções principal de extração da API Siconfi               
+#        Funções principais de extração da API Siconfi                      
 #-------------------------------------------------------------
 
 extrair_dados_siconfi_anexos_relatorios <- function(){
@@ -115,40 +115,42 @@ extrair_dados_siconfi_extrato_entregas <- function(id_ente,
     url_base = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/extrato_entregas"
     
     df_list <- list() # df acumulador pra cada requisição
-
+    print(id_ente)
     for (ano in an_referencia) {
-        # Agrupa parâmetros de consulta
-        query_params <- list(
-            id_ente = id_ente,
-            an_referencia = ano
-        )
+        for (uf in id_ente) {
+            # Agrupa parâmetros de consulta
+            query_params <- list(
+                id_ente = uf,
+                an_referencia = ano
+            )
 
-        # Requisição HTTPS
-        resposta <- tryCatch(
-            GET(url=url_base, query=query_params),
-            error = function(e) {
-                warning("Erro na requisição: ", conditionMessage(e))
+            # Requisição HTTPS
+            resposta <- tryCatch(
+                GET(url=url_base, query=query_params),
+                error = function(e) {
+                    warning("Erro na requisição: ", conditionMessage(e))
+                    return(NULL)
+                }
+            )
+            
+            # Verifica se a resposta é válida
+            if(is.null(resposta) || resposta$status_code != 200) {
+                warning("Falha na resposta da API!")
                 return(NULL)
-            }
-        )
-        
-        # Verifica se a resposta é válida
-        if(is.null(resposta) || resposta$status_code != 200) {
-            warning("Falha na resposta da API!")
-            return(NULL)
-        } 
-        
-        # Parse do JSON (carga útil)
-        dados <- fromJSON(content(resposta, as="text", encoding="UTF-8"))
+            } 
+            
+            # Parse do JSON (carga útil)
+            dados <- fromJSON(content(resposta, as="text", encoding="UTF-8"))
 
-        # Retorna os dados estruturados
-        df <- as.data.frame(dados$items)
+            # Retorna os dados estruturados
+            df <- as.data.frame(dados$items)
 
-        # Adiciona o data frame à lista de resultados
-        df_list[[length(df_list)+1]] <- df 
-                
-        # Respeita limite da API (1 req/s)
-        Sys.sleep(1)
+            # Adiciona o data frame à lista de resultados
+            df_list[[length(df_list)+1]] <- df 
+                    
+            # Respeita limite da API (1 req/s)
+            Sys.sleep(1)
+        }
     }
 
     # Combina dataframes acumulados
@@ -370,6 +372,11 @@ extrair_dados_siconfi_rgf <- function(an_exercicio,
                     id_ente = uf
                 )
 
+                # Params opcionais se não forem vazios
+                if (!is.null(no_anexo) && no_anexo != "" && length(no_anexo) == 1) {
+                    query_params$no_anexo <- no_anexo
+                }
+
                 # Requisição HTTPS
                 resposta <- tryCatch(
                     GET(url=url_base, query=query_params),
@@ -380,8 +387,9 @@ extrair_dados_siconfi_rgf <- function(an_exercicio,
 
                 # Verifica se a resposta é válida
                 if(is.null(resposta) || resposta$status_code != 200) {
-                    warning("Falha na resposta da API!")
-                    return(NULL)
+                    warning("Falha na resposta da API! Status:", 
+                           ifelse(is.null(resposta), "NULL", resposta$status_code))
+                    next # Pula iteração em vez de retornar NULL
                 } 
 
                 # Parse do JSON (carga útil)
@@ -400,7 +408,10 @@ extrair_dados_siconfi_rgf <- function(an_exercicio,
     }
 
     # Combina dataframes acumulados
-    df_final <- bind_rows(df_list)
+    if (length(df_list) == 0) {
+        warning("Nenhum dado encontrado")
+        return(NULL)
+    }
     
     return(df_final)
 }
