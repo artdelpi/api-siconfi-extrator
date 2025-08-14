@@ -74,6 +74,14 @@ server <- function(input, output, session) {
     "35 - São Paulo", "17 - Tocantins"
   )
 
+  # REGEX pra extração de substrings
+  uf_codes  <- sub("^\\s*([0-9]{1,2}).*$", "\\1", cod_ibge)               
+  uf_names  <- sub("^\\s*[0-9]{1,2}\\s*-\\s*", "", cod_ibge)              
+  uf_labels <- paste0(uf_names, " (", uf_codes, ")")                      
+
+  # Valor puro
+  uf_choices <- setNames(uf_codes, uf_labels)
+
   # Renderiza períodos do RGF de acordo com a periodicidade (Q ou S)
   output$nr_periodo_ui <- renderUI({
     req(input$in_periodicidade) # garante que existe input
@@ -229,33 +237,28 @@ server <- function(input, output, session) {
 
   output$params_coluna_2 <- renderUI({
     switch(input$endpoint, 
-          
       "anexos-relatorios" = list(
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       ),  # sem query params
 
       "dca" = list(
         textInput("no_anexo", "Anexo (opcional):", ""),
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
-                      multiple = TRUE),
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+                      choices = uf_choices, 
+                      multiple = TRUE)
       ),
 
       "entes" = list(
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
       ),  # sem query params
 
       "extrato_entregas" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
-                      multiple = TRUE),
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+                      choices = uf_choices, 
+                      multiple = TRUE)
       ),
 
       "msc_controle" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, multiple = TRUE),
+                      choices = uf_choices, multiple = TRUE),
         selectInput("co_tipo_matriz", "Tipo de Matriz:",
                     choices = c("MSCC", "MSCE")),
         selectInput("classe_conta", "Classe de Conta:",
@@ -263,13 +266,12 @@ server <- function(input, output, session) {
         selectInput("id_tv", "Tipo de Valor:",
                     choices = c("beginning_balance", 
                                 "ending_balance", 
-                                "period_change")),
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+                                "period_change"))
       ),
 
       "msc_orcamentaria" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, multiple = TRUE),
+                      choices = uf_choices, multiple = TRUE),
         selectInput("co_tipo_matriz", "Tipo de Matriz:", 
                     choices = c("MSCC", "MSCE")),
         selectInput("classe_conta", "Classe de Conta:", 
@@ -277,13 +279,12 @@ server <- function(input, output, session) {
         selectInput("id_tv", "Tipo de Valor:", 
                     choices = c("beginning_balance", 
                                 "ending_balance", 
-                                "period_change")),
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+                                "period_change"))
       ),
 
       "msc_patrimonial" = list(
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, multiple = TRUE),
+                      choices = uf_choices, multiple = TRUE),
         selectInput("co_tipo_matriz", "Tipo de Matriz:", 
                     choices = c("MSCC", "MSCE")),
         selectInput("classe_conta", "Classe de Conta:", 
@@ -291,8 +292,7 @@ server <- function(input, output, session) {
         selectInput("id_tv", "Tipo de Valor:", 
                     choices = c("beginning_balance", 
                                 "ending_balance", 
-                                "period_change")),
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")                  
+                                "period_change"))
       ),
 
       "rgf" = list(
@@ -306,9 +306,8 @@ server <- function(input, output, session) {
                                 "2 - Legislativo", 
                                 "3 - Judiciário")),
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
-                      multiple = TRUE),
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+                      choices = uf_choices, 
+                      multiple = TRUE)
       ),
 
       "rreo" = list(
@@ -318,9 +317,8 @@ server <- function(input, output, session) {
         selectInput("co_esfera", "Esfera:", 
                     choices = c("M", "E", "U", "C")),
         selectizeInput("id_ente", "UFs (múltiplas):", 
-                      choices = cod_ibge, 
-                      multiple = TRUE),
-        textInput("caminho_csv", "Caminho para salvar CSV:", "C:/Users/seuusuario/Downloads/")
+                      choices = uf_choices, 
+                      multiple = TRUE)
       )
     )
   })

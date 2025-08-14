@@ -115,7 +115,7 @@ extrair_dados_siconfi_extrato_entregas <- function(id_ente,
     url_base = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt/extrato_entregas"
     
     df_list <- list() # df acumulador pra cada requisição
-
+    print(id_ente)
     for (ano in an_referencia) {
         # Agrupa parâmetros de consulta
         query_params <- list(
