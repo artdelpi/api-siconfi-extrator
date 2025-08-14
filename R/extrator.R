@@ -117,38 +117,40 @@ extrair_dados_siconfi_extrato_entregas <- function(id_ente,
     df_list <- list() # df acumulador pra cada requisição
     print(id_ente)
     for (ano in an_referencia) {
-        # Agrupa parâmetros de consulta
-        query_params <- list(
-            id_ente = id_ente,
-            an_referencia = ano
-        )
+        for (uf in id_ente) {
+            # Agrupa parâmetros de consulta
+            query_params <- list(
+                id_ente = uf,
+                an_referencia = ano
+            )
 
-        # Requisição HTTPS
-        resposta <- tryCatch(
-            GET(url=url_base, query=query_params),
-            error = function(e) {
-                warning("Erro na requisição: ", conditionMessage(e))
+            # Requisição HTTPS
+            resposta <- tryCatch(
+                GET(url=url_base, query=query_params),
+                error = function(e) {
+                    warning("Erro na requisição: ", conditionMessage(e))
+                    return(NULL)
+                }
+            )
+            
+            # Verifica se a resposta é válida
+            if(is.null(resposta) || resposta$status_code != 200) {
+                warning("Falha na resposta da API!")
                 return(NULL)
-            }
-        )
-        
-        # Verifica se a resposta é válida
-        if(is.null(resposta) || resposta$status_code != 200) {
-            warning("Falha na resposta da API!")
-            return(NULL)
-        } 
-        
-        # Parse do JSON (carga útil)
-        dados <- fromJSON(content(resposta, as="text", encoding="UTF-8"))
+            } 
+            
+            # Parse do JSON (carga útil)
+            dados <- fromJSON(content(resposta, as="text", encoding="UTF-8"))
 
-        # Retorna os dados estruturados
-        df <- as.data.frame(dados$items)
+            # Retorna os dados estruturados
+            df <- as.data.frame(dados$items)
 
-        # Adiciona o data frame à lista de resultados
-        df_list[[length(df_list)+1]] <- df 
-                
-        # Respeita limite da API (1 req/s)
-        Sys.sleep(1)
+            # Adiciona o data frame à lista de resultados
+            df_list[[length(df_list)+1]] <- df 
+                    
+            # Respeita limite da API (1 req/s)
+            Sys.sleep(1)
+        }
     }
 
     # Combina dataframes acumulados
