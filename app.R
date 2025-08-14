@@ -94,63 +94,73 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$buscar, tryCatch ({
-    # Extração dos dados da API 
-    df <- switch(input$endpoint,
-      "anexos-relatorios" = extrair_dados_siconfi_anexos_relatorios(),
-      "dca" = extrair_dados_siconfi_dca(
-        an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
-        no_anexo = input$no_anexo,
-        id_ente = input$id_ente
-      ),
-      "entes" = extrair_dados_siconfi_entes(),
-      "extrato_entregas" = extrair_dados_siconfi_extrato_entregas(
-        id_ente = input$id_ente,
-        an_referencia = seq(input$an_referencia[1], input$an_referencia[2])
-      ),
-      "msc_controle" = extrair_dados_siconfi_msc_controle(
-        id_ente = input$id_ente,
-        an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
-        me_referencia = input$me_referencia,
-        co_tipo_matriz = input$co_tipo_matriz,
-        classe_conta = input$classe_conta,
-        id_tv = input$id_tv
-      ),
-      "msc_orcamentaria" = extrair_dados_siconfi_msc_orcamentaria(
-        id_ente = input$id_ente,
-        an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
-        me_referencia = input$me_referencia,
-        co_tipo_matriz = input$co_tipo_matriz,
-        classe_conta = input$classe_conta,
-        id_tv = input$id_tv
-      ),
-      "msc_patrimonial" = extrair_dados_siconfi_msc_patrimonial(
-        id_ente = input$id_ente,
-        an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
-        me_referencia = input$me_referencia,
-        co_tipo_matriz = input$co_tipo_matriz,
-        classe_conta = input$classe_conta,
-        id_tv = input$id_tv
-      ),
-      "rgf" = extrair_dados_siconfi_rgf(
-        an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
-        in_periodicidade = input$in_periodicidade,
-        nr_periodo = input$nr_periodo,
-        co_tipo_demonstrativo = input$co_tipo_demonstrativo,
-        no_anexo = input$no_anexo,
-        co_esfera = input$co_esfera,
-        co_poder = input$co_poder,
-        id_ente = input$id_ente
-      ),
-      "rreo" = extrair_dados_siconfi_rreo(
-        an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
-        nr_periodo = input$nr_periodo,
-        co_tipo_demonstrativo = input$co_tipo_demonstrativo,
-        no_anexo = input$no_anexo,
-        co_esfera = input$co_esfera,
-        id_ente = input$id_ente
-      ),
-      stop("Este endpoint é inválido ou não foi implementado.")
-    )
+    withProgress(message = "Importando dados...", value = 0, {
+
+      incProgress(0.1, detail = "Conectando à API...")
+
+      # Extração dos dados da API 
+      df <- switch(input$endpoint,
+        "anexos-relatorios" = extrair_dados_siconfi_anexos_relatorios(),
+        "dca" = extrair_dados_siconfi_dca(
+          an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+          no_anexo = input$no_anexo,
+          id_ente = input$id_ente
+        ),
+        "entes" = extrair_dados_siconfi_entes(),
+        "extrato_entregas" = extrair_dados_siconfi_extrato_entregas(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2])
+        ),
+        "msc_controle" = extrair_dados_siconfi_msc_controle(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+          me_referencia = input$me_referencia,
+          co_tipo_matriz = input$co_tipo_matriz,
+          classe_conta = input$classe_conta,
+          id_tv = input$id_tv
+        ),
+        "msc_orcamentaria" = extrair_dados_siconfi_msc_orcamentaria(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+          me_referencia = input$me_referencia,
+          co_tipo_matriz = input$co_tipo_matriz,
+          classe_conta = input$classe_conta,
+          id_tv = input$id_tv
+        ),
+        "msc_patrimonial" = extrair_dados_siconfi_msc_patrimonial(
+          id_ente = input$id_ente,
+          an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+          me_referencia = input$me_referencia,
+          co_tipo_matriz = input$co_tipo_matriz,
+          classe_conta = input$classe_conta,
+          id_tv = input$id_tv
+        ),
+        "rgf" = extrair_dados_siconfi_rgf(
+          an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+          in_periodicidade = input$in_periodicidade,
+          nr_periodo = input$nr_periodo,
+          co_tipo_demonstrativo = input$co_tipo_demonstrativo,
+          no_anexo = input$no_anexo,
+          co_esfera = input$co_esfera,
+          co_poder = input$co_poder,
+          id_ente = input$id_ente
+        ),
+        "rreo" = extrair_dados_siconfi_rreo(
+          an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+          nr_periodo = input$nr_periodo,
+          co_tipo_demonstrativo = input$co_tipo_demonstrativo,
+          no_anexo = input$no_anexo,
+          co_esfera = input$co_esfera,
+          id_ente = input$id_ente
+        ),
+        stop("Este endpoint é inválido ou não foi implementado.")
+      )
+    
+    
+    incProgress(0.8, detail = "Processando dados...")
+
+    # Simulação de tempo de processamento (opcional)
+    Sys.sleep(0.5)
 
     # Se vazio, avisa e sai
     if (is.null(df) || nrow(df) == 0) {
@@ -159,14 +169,17 @@ server <- function(input, output, session) {
       return(invisible(NULL))
     }
 
-    # Primeiro guarda para a prévia/baixa
+    # Guarda pro preview
     dados_extraidos(df)
-    showNotification(sprintf("Extração concluída: linhas retornadas: %d", nrow(df)), type = "message")
 
+    incProgress(1, detail = "Concluído!")
+    })
 
-    }, error = function(e) {
-      showNotification(paste("Erro na extração:", e$message), type = "error")
-    }))  
+    showNotification(sprintf("Extração concluída: linhas retornadas: %d", nrow(dados_extraidos())), type = "message")
+
+  }, error = function(e) {
+    showNotification(paste("Erro na extração:", e$message), type = "error")
+  }))  
   
   output$params_coluna_1 <- renderUI ({
     switch(input$endpoint, 
