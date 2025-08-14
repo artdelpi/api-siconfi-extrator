@@ -99,12 +99,22 @@ A documentação da API do Siconfi abre desaconselhando que pessoas sem experiê
 
 ---
 
-## Como Rodar
+## Como rodar (passo a passo)
 
-### Opção 1 — R/RStudio
+**Você precisa de:**  
+- **R** (gratuito): https://cran.r-project.org/  
+- **RStudio** (recomendado): https://posit.co/download/rstudio-desktop/
 
-1. Instale as dependências:
+1. **Baixe o projeto**  
+   No GitHub, clique em **Code -> Download ZIP**. Extraia o ZIP em uma pasta.
+
+2. **Abra o projeto no RStudio**  
+   No RStudio, vá em **File -> Open File…** e abra o arquivo **`app.R`** (que está na pasta do projeto).
+
+3. **Instale os pacotes necessários** (copie e cole no Console do R e pressione Enter):
    ```r
    install.packages(c("shiny", "httr", "jsonlite", "dplyr"))
-   # opcionais:
-   # install.packages(c("DT", "shinyFiles"))
+
+4. **Execute o aplicativo**  
+   Clique em **Run App** (canto superior direito do editor no RStudio).  
+   O endereço (ex.: `http://127.0.0.1:5130`) aparecerá. Abra no navegador se não abrir automaticamente.
