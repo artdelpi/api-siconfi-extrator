@@ -88,76 +88,73 @@ server <- function(input, output, session) {
   observeEvent(input$buscar, tryCatch ({
     # Extração dos dados da API 
     df <- switch(input$endpoint,
-      "anexos-relatorios" = extrair_dados_siconfi_anexos_relatorios(
-                # sem query params
-              ),
+      "anexos-relatorios" = extrair_dados_siconfi_anexos_relatorios(),
       "dca" = extrair_dados_siconfi_dca(
-                an_exercicio = seq(input$ano_range[1], input$ano_range[2]),
-                no_anexo = input$no_anexo,
-                id_ente = input$id_ente
-              ),
-      "entes" = extrair_dados_siconfi_entes(
-                # sem query params
-              ),
+        an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+        no_anexo = input$no_anexo,
+        id_ente = input$id_ente
+      ),
+      "entes" = extrair_dados_siconfi_entes(),
       "extrato_entregas" = extrair_dados_siconfi_extrato_entregas(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2])
-              ),
+        id_ente = input$id_ente,
+        an_referencia = seq(input$an_referencia[1], input$an_referencia[2])
+      ),
       "msc_controle" = extrair_dados_siconfi_msc_controle(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2]),
-                me_referencia = input$me_referencia,
-                co_tipo_matriz = input$co_tipo_matriz,
-                classe_conta = input$classe_conta,
-                id_tv = input$id_tv
-              ),
+        id_ente = input$id_ente,
+        an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+        me_referencia = input$me_referencia,
+        co_tipo_matriz = input$co_tipo_matriz,
+        classe_conta = input$classe_conta,
+        id_tv = input$id_tv
+      ),
       "msc_orcamentaria" = extrair_dados_siconfi_msc_orcamentaria(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2]),
-                me_referencia = input$me_referencia,
-                co_tipo_matriz = input$co_tipo_matriz,
-                classe_conta = input$classe_conta,
-                id_tv = input$id_tv
-              ),
+        id_ente = input$id_ente,
+        an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+        me_referencia = input$me_referencia,
+        co_tipo_matriz = input$co_tipo_matriz,
+        classe_conta = input$classe_conta,
+        id_tv = input$id_tv
+      ),
       "msc_patrimonial" = extrair_dados_siconfi_msc_patrimonial(
-                id_ente = input$id_ente,
-                an_referencia = seq(input$ano_referencia[1], input$ano_referencia[2]),
-                me_referencia = input$me_referencia,
-                co_tipo_matriz = input$co_tipo_matriz,
-                classe_conta = input$classe_conta,
-                id_tv = input$id_tv
-              ),
+        id_ente = input$id_ente,
+        an_referencia = seq(input$an_referencia[1], input$an_referencia[2]),
+        me_referencia = input$me_referencia,
+        co_tipo_matriz = input$co_tipo_matriz,
+        classe_conta = input$classe_conta,
+        id_tv = input$id_tv
+      ),
       "rgf" = extrair_dados_siconfi_rgf(
-                an_exercicio = seq(input$ano_range[1], input$ano_range[2]),
-                in_periodicidade = input$in_periodicidade,
-                nr_periodo = input$nr_periodo,
-                co_tipo_demonstrativo = input$co_tipo_demonstrativo,
-                no_anexo = input$no_anexo,
-                co_esfera = input$co_esfera,
-                co_poder = input$co_poder,
-                id_ente = input$id_ente
-              ),
+        an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+        in_periodicidade = input$in_periodicidade,
+        nr_periodo = input$nr_periodo,
+        co_tipo_demonstrativo = input$co_tipo_demonstrativo,
+        no_anexo = input$no_anexo,
+        co_esfera = input$co_esfera,
+        co_poder = input$co_poder,
+        id_ente = input$id_ente
+      ),
       "rreo" = extrair_dados_siconfi_rreo(
-                an_exercicio = seq(input$ano_range[1], input$ano_range[2]),
-                nr_periodo = input$nr_periodo,
-                co_tipo_demonstrativo = input$co_tipo_demonstrativo,
-                no_anexo = input$no_anexo,
-                co_esfera = input$co_esfera,
-                id_ente = input$id_ente
-              ),
+        an_exercicio = seq(input$an_exercicio[1], input$an_exercicio[2]),
+        nr_periodo = input$nr_periodo,
+        co_tipo_demonstrativo = input$co_tipo_demonstrativo,
+        no_anexo = input$no_anexo,
+        co_esfera = input$co_esfera,
+        id_ente = input$id_ente
+      ),
       stop("Este endpoint é inválido ou não foi implementado.")
     )
 
-    # Salva localmente
-    if (!is.null(df)) {
-      write.csv(df, input$caminho_csv, row.names = FALSE)
-      showNotification("Extração finalizada com sucesso!", type = "message")
-    } else {
+    # Se vazio, avisa e sai
+    if (is.null(df) || nrow(df) == 0) {
+      dados_extraidos(NULL)
       showNotification("Nenhum dado encontrado com esses filtros.", type = "warning")
+      return(invisible(NULL))
     }
 
-    # Armazena para visualização
+    # Primeiro guarda para a prévia/baixa
     dados_extraidos(df)
+    showNotification(sprintf("Extração concluída: linhas retornadas: %d", nrow(df)), type = "message")
+
 
     }, error = function(e) {
       showNotification(paste("Erro na extração:", e$message), type = "error")
@@ -330,17 +327,18 @@ server <- function(input, output, session) {
 
   # Exibir prévia
   output$preview <- renderTable({
+    req(dados_extraidos())
     head(dados_extraidos(), 20)
   })
 
   # Download
   output$baixar <- downloadHandler(
     filename = function() {
-      paste0("dados_siconfi_", Sys.Date(), ".csv")
+      paste0("dados_siconfi_", input$endpoint, "_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      df <- dados_extraidos()
-      if (!is.null(df)) write.csv(df, file, row.names = FALSE)
+      df <- req(dados_extraidos())
+      write.csv(df, file, row.names = FALSE)
     }
   )
 }

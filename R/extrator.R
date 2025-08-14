@@ -370,6 +370,11 @@ extrair_dados_siconfi_rgf <- function(an_exercicio,
                     id_ente = uf
                 )
 
+                # Params opcionais se não forem vazios
+                if (!is.null(no_anexo) && no_anexo != "" && length(no_anexo) == 1) {
+                    query_params$no_anexo <- no_anexo
+                }
+
                 # Requisição HTTPS
                 resposta <- tryCatch(
                     GET(url=url_base, query=query_params),
@@ -380,8 +385,9 @@ extrair_dados_siconfi_rgf <- function(an_exercicio,
 
                 # Verifica se a resposta é válida
                 if(is.null(resposta) || resposta$status_code != 200) {
-                    warning("Falha na resposta da API!")
-                    return(NULL)
+                    warning("Falha na resposta da API! Status:", 
+                           ifelse(is.null(resposta), "NULL", resposta$status_code))
+                    next # Pula iteração em vez de retornar NULL
                 } 
 
                 # Parse do JSON (carga útil)
@@ -400,7 +406,10 @@ extrair_dados_siconfi_rgf <- function(an_exercicio,
     }
 
     # Combina dataframes acumulados
-    df_final <- bind_rows(df_list)
+    if (length(df_list) == 0) {
+        warning("Nenhum dado encontrado")
+        return(NULL)
+    }
     
     return(df_final)
 }
